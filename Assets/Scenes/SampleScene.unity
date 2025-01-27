@@ -206,7 +206,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13052596, y: -0, z: -0, w: 0.99144495}
-  m_LocalPosition: {x: -0.22, y: 4.2547445, z: -23.717108}
+  m_LocalPosition: {x: -0.21999998, y: 4.2547445, z: -23.717108}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1151,7 +1151,7 @@ GameObject:
   - component: {fileID: 1272144100}
   - component: {fileID: 1272144099}
   - component: {fileID: 1272144098}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1529,6 +1529,7 @@ GameObject:
   - component: {fileID: 2140593619}
   - component: {fileID: 2140593618}
   - component: {fileID: 2140593617}
+  - component: {fileID: 2140593622}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1549,10 +1550,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  gravityScale: 0
-  collisionLayerMask:
-    serializedVersion: 2
-    m_Bits: 8
+  gravityScale: 9.81
 --- !u!135 &2140593618
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1642,6 +1640,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2140593622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2140593616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6dd5cb41dc681845a86d2a59f10eec2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collisionLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1649,7 +1662,7 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 330585546}
+  - {fileID: 2140593621}
   - {fileID: 1125733210}
   - {fileID: 1227669690}
   - {fileID: 416377511}
-  - {fileID: 2140593621}
