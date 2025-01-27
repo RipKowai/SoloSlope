@@ -1,31 +1,74 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public InputAction playerControlls;
+    public float moveSpeed = 10f;
+    public float gravityScale = 2f; 
+    private float verticalSpeed = 0f;
 
-    public float moveDirection;
+    public LayerMask collisionLayerMask;
+    private Coroutine raycastCoroutine;
 
-    private void OnEnable()
+    private void Start()
     {
-        playerControlls.Enable();
+        raycastCoroutine = StartCoroutine(RaycastCoroutine());
     }
 
-    private void OnDisable()
+    private IEnumerator RaycastCoroutine()
     {
-        playerControlls.Disable();
-    }
+        while (true)
+        {
+            if (gameObject.activeSelf)
+            {
+                if (IsCollidingWithHill())
+                {
+                    verticalSpeed = 0f;
+                }
+            }
 
-    void Update()
-    {
-        moveDirection = playerControlls.ReadValue<float>();
+            yield return null;
+        }
     }
 
     private void FixedUpdate()
     {
-        transform.position += new Vector3(moveDirection * moveSpeed, 0) * Time.deltaTime;
-        transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, -3.5f, 3.5f), transform.position.z);
+        float moveDirection = Input.GetAxis("Horizontal");
+        transform.position += new Vector3(moveDirection * moveSpeed * Time.deltaTime, 0, 0);
+
+        verticalSpeed -= gravityScale * Time.deltaTime;
+        transform.position += new Vector3(0, verticalSpeed * Time.deltaTime, 0);
+
+        float rotationAngle = moveDirection * moveSpeed * Time.deltaTime * 360;
+        transform.Rotate(Vector3.forward, rotationAngle);
+    }
+
+    private bool IsCollidingWithHill()
+    {
+        Debug.Log($"Player Position: {transform.position}");
+
+        Vector3 rayOrigin = transform.position;
+        Vector3 rayDirection = Vector3.down;
+
+
+        float rayLength = 0.5f;
+
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, rayDirection, rayLength, collisionLayerMask);
+
+        Debug.DrawRay(rayOrigin, rayDirection * rayLength, Color.red);
+
+        Debug.Log($"Raycast from {rayOrigin} in direction {rayDirection} with length {rayLength}");
+
+        return hit.collider != null;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("Collision Enter: " + collision);
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        Debug.Log("Collision Stay:" + collision.gameObject.name);
     }
 }
