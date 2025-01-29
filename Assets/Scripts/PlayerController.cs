@@ -24,8 +24,8 @@ public class PlayerController : MonoBehaviour
         transform.position += new Vector3(0, verticalSpeed * Time.deltaTime, 0.01f);
 
         // Apply rotation to the ball
-        float rotationAngle = moveDirection * moveSpeed * Time.deltaTime * 360;
-        transform.Rotate(Vector3.forward, rotationAngle);
+        //float rotationAngle = moveDirection * moveSpeed * Time.deltaTime * 60;
+        //transform.Rotate(Vector3.forward, rotationAngle);
 
         if (playerCollisions.IsCollidingWithGround())
         {

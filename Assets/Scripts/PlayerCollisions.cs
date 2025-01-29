@@ -4,7 +4,8 @@ public class PlayerCollisions : MonoBehaviour
 {
     public LayerMask collisionLayerMask;
     private Vector3 lastPosition;
-    private float verticalSpeed;
+    private Vector3 movementDirection;
+    public float forceMultiplier = 10f;
 
     private void Start()
     {
@@ -13,13 +14,26 @@ public class PlayerCollisions : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Perform raycasting to check for collisions
+        // Perform raycasting to check for collisions and slopes
+        Vector3 slopeDirection = GetSlopeDirection();
+
+        // Apply force based on slope direction
+        movementDirection += slopeDirection * forceMultiplier * Time.fixedDeltaTime;
+        transform.position += movementDirection * Time.fixedDeltaTime;
+
+        Debug.Log($"Slope Direction: {slopeDirection}, Movement Direction: {movementDirection}");
+
         if (IsCollidingWithGround())
         {
             Debug.Log("Collision detected with ground.");
-            transform.position = lastPosition; 
+            movementDirection = Vector3.zero;  // Stop movement when colliding with the ground
+            transform.position = lastPosition;
         }
-        lastPosition = transform.position;
+        else
+        {
+            lastPosition = transform.position;
+        }
+
     }
 
     public bool IsCollidingWithGround()
@@ -31,8 +45,8 @@ public class PlayerCollisions : MonoBehaviour
 
         float rayLength = 0.5f;
 
-        RaycastHit hit;
-        bool isHit = Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionLayerMask);
+        UnityEngine.RaycastHit hit;
+        bool isHit = UnityEngine.Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionLayerMask);
 
         Debug.DrawRay(rayOrigin, rayDirection * rayLength, Color.red);
 
@@ -51,8 +65,48 @@ public class PlayerCollisions : MonoBehaviour
         Debug.Log("Collision Stay: " + collision.gameObject.name);
     }
 
-    public void SetVerticalSpeed(float speed)
+    private Vector3 GetSlopeDirection()
     {
-        verticalSpeed = speed;
+        Vector3[] rayOrigins = new Vector3[4];
+        rayOrigins[0] = transform.position + new Vector3(0.5f, 0, 0);   // Front Right
+        rayOrigins[1] = transform.position + new Vector3(-0.5f, 0, 0);  // Front Left
+        rayOrigins[2] = transform.position + new Vector3(0, 0, 0.5f);   // Back Right
+        rayOrigins[3] = transform.position + new Vector3(0, 0, -0.5f);  // Back Left
+
+        Vector3 heightDifferences = Vector3.zero;
+
+        for (int i = 0; i < rayOrigins.Length; i++)
+        {
+            UnityEngine.RaycastHit hit;
+            if (UnityEngine.Physics.Raycast(rayOrigins[i], Vector3.down, out hit, 1f, collisionLayerMask))
+            {
+                Debug.DrawRay(rayOrigins[i], Vector3.down * hit.distance, Color.green);
+
+                switch (i)
+                {
+                    case 0:
+                        heightDifferences.x -= hit.point.y;  // Front Right
+                        heightDifferences.z -= hit.point.y;
+                        break;
+                    case 1:
+                        heightDifferences.x += hit.point.y;  // Front Left
+                        heightDifferences.z -= hit.point.y;
+                        break;
+                    case 2:
+                        heightDifferences.x -= hit.point.y;  // Back Right
+                        heightDifferences.z += hit.point.y;
+                        break;
+                    case 3:
+                        heightDifferences.x += hit.point.y;  // Back Left
+                        heightDifferences.z += hit.point.y;
+                        break;
+                }
+            }
+        }
+
+        Vector3 slopeDirection = new Vector3(heightDifferences.x, 0, heightDifferences.z).normalized;
+        Debug.Log($"Height Differences: {heightDifferences}, Calculated Slope Direction: {slopeDirection}");
+
+        return slopeDirection;
     }
 }
