@@ -73,40 +73,38 @@ public class PlayerCollisions : MonoBehaviour
         rayOrigins[2] = transform.position + new Vector3(0, 0, 0.5f);   // Back Right
         rayOrigins[3] = transform.position + new Vector3(0, 0, -0.5f);  // Back Left
 
-        Vector3 heightDifferences = Vector3.zero;
+        float[] heights = new float[4];
 
         for (int i = 0; i < rayOrigins.Length; i++)
         {
-            UnityEngine.RaycastHit hit;
-            if (UnityEngine.Physics.Raycast(rayOrigins[i], Vector3.down, out hit, 1f, collisionLayerMask))
+            RaycastHit hit;
+            if (Physics.Raycast(rayOrigins[i], Vector3.down, out hit, 1f, collisionLayerMask))
             {
                 Debug.DrawRay(rayOrigins[i], Vector3.down * hit.distance, Color.green);
-
-                switch (i)
-                {
-                    case 0:
-                        heightDifferences.x -= hit.point.y;  // Front Right
-                        heightDifferences.z -= hit.point.y;
-                        break;
-                    case 1:
-                        heightDifferences.x += hit.point.y;  // Front Left
-                        heightDifferences.z -= hit.point.y;
-                        break;
-                    case 2:
-                        heightDifferences.x -= hit.point.y;  // Back Right
-                        heightDifferences.z += hit.point.y;
-                        break;
-                    case 3:
-                        heightDifferences.x += hit.point.y;  // Back Left
-                        heightDifferences.z += hit.point.y;
-                        break;
-                }
+                heights[i] = hit.point.y;
+            }
+            else
+            {
+                heights[i] = transform.position.y;  // Default to the player's position if no hit
             }
         }
 
-        Vector3 slopeDirection = new Vector3(heightDifferences.x, 0, heightDifferences.z).normalized;
-        Debug.Log($"Height Differences: {heightDifferences}, Calculated Slope Direction: {slopeDirection}");
+        // Calculate height differences
+        float heightFront = (heights[0] + heights[1]) / 2;
+        float heightBack = (heights[2] + heights[3]) / 2;
+        float heightRight = (heights[0] + heights[2]) / 2;
+        float heightLeft = (heights[1] + heights[3]) / 2;
+
+        Vector3 forwardSlope = new Vector3(0, heightBack - heightFront, 1).normalized;
+        Vector3 rightSlope = new Vector3(1, heightLeft - heightRight, 0).normalized;
+
+        Vector3 slopeDirection = (forwardSlope + rightSlope).normalized;
+
+        Debug.Log($"Height Front: {heightFront}, Height Back: {heightBack}");
+        Debug.Log($"Height Right: {heightRight}, Height Left: {heightLeft}");
+        Debug.Log($"Calculated Slope Direction: {slopeDirection}");
 
         return slopeDirection;
     }
+
 }
