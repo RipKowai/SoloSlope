@@ -2,9 +2,12 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 10f;
+    public float maxMoveSpeed = 10f;
+    public float accelerationTime = 2f;
     public float gravityScale = 2f;
+
     private float verticalSpeed = 0f;
+    private float currentSpeed = 0f;
 
     private PlayerCollisions playerCollisions;
 
@@ -15,13 +18,16 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //horizontal movement
+        // Horizontal movement
         float moveDirection = Input.GetAxis("Horizontal");
-        transform.position += new Vector3(moveDirection * moveSpeed * Time.deltaTime, 0, 0);
 
-        //gravity
+        currentSpeed = Mathf.Lerp(currentSpeed, maxMoveSpeed, Time.deltaTime);
+
+        transform.position += new Vector3(moveDirection * currentSpeed * Time.deltaTime, 0, 0);
+
+        // Gravity
         verticalSpeed -= gravityScale * Time.deltaTime;
-        transform.position += new Vector3(0, verticalSpeed * Time.deltaTime, 0.01f);
+        transform.position += new Vector3(0, verticalSpeed * Time.deltaTime, 0);
 
         // Apply rotation to the ball
         //float rotationAngle = moveDirection * moveSpeed * Time.deltaTime * 60;
@@ -30,6 +36,11 @@ public class PlayerController : MonoBehaviour
         if (playerCollisions.IsCollidingWithGround())
         {
             verticalSpeed = 0f;
+        }
+
+        if(moveDirection == 0)
+        {
+            currentSpeed = 0f;
         }
     }
 }

@@ -6,10 +6,12 @@ public class PlayerCollisions : MonoBehaviour
     private Vector3 lastPosition;
     private Vector3 movementDirection;
     public float forceMultiplier = 10f;
+    public float groundCheckDistance = 0.3f;
 
     private void Start()
     {
         lastPosition = transform.position;
+        movementDirection = Vector3.zero;
     }
 
     private void FixedUpdate()
@@ -18,41 +20,49 @@ public class PlayerCollisions : MonoBehaviour
         Vector3 slopeDirection = GetSlopeDirection();
 
         // Apply force based on slope direction
-        movementDirection += slopeDirection * forceMultiplier * Time.fixedDeltaTime;
-        transform.position += movementDirection * Time.fixedDeltaTime;
+        if (slopeDirection != Vector3.zero)
+        {
+            movementDirection += slopeDirection * forceMultiplier * Time.fixedDeltaTime;
+        }
+
+        // Apply movement direction excluding gravity, which is handled by another script
+        transform.position += new Vector3(movementDirection.x, 0, movementDirection.z) * Time.fixedDeltaTime;
 
         Debug.Log($"Slope Direction: {slopeDirection}, Movement Direction: {movementDirection}");
 
+        // Check for ground collision and adjust position
         if (IsCollidingWithGround())
         {
             Debug.Log("Collision detected with ground.");
-            movementDirection = Vector3.zero;  // Stop movement when colliding with the ground
-            transform.position = lastPosition;
+            SnapToGround();
+            movementDirection.y = 0f; // Reset vertical movement
         }
-        else
-        {
-            lastPosition = transform.position;
-        }
-
     }
 
     public bool IsCollidingWithGround()
     {
-        Debug.Log($"Player Position: {transform.position}");
-
         Vector3 rayOrigin = transform.position;
-        Vector3 rayDirection = Vector3.down;
+        float rayLength = groundCheckDistance;
 
-        float rayLength = 0.5f;
+        bool isHit = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, rayLength, collisionLayerMask);
 
-        UnityEngine.RaycastHit hit;
-        bool isHit = UnityEngine.Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionLayerMask);
-
-        Debug.DrawRay(rayOrigin, rayDirection * rayLength, Color.red);
-
-        Debug.Log($"Raycast from {rayOrigin} in direction {rayDirection} with length {rayLength}");
+        Debug.DrawRay(rayOrigin, Vector3.down * rayLength, Color.red); // Visualize ground check ray
 
         return isHit;
+
+    }
+
+    private void SnapToGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, groundCheckDistance, collisionLayerMask))
+        {
+            float distanceToGround = hit.distance;
+            if(distanceToGround > 0f)
+            {
+                transform.position -= new Vector3(0, distanceToGround, 0);
+            }
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -68,43 +78,43 @@ public class PlayerCollisions : MonoBehaviour
     private Vector3 GetSlopeDirection()
     {
         Vector3[] rayOrigins = new Vector3[4];
-        rayOrigins[0] = transform.position + new Vector3(0.5f, 0, 0);   // Front Right
-        rayOrigins[1] = transform.position + new Vector3(-0.5f, 0, 0);  // Front Left
-        rayOrigins[2] = transform.position + new Vector3(0, 0, 0.5f);   // Back Right
-        rayOrigins[3] = transform.position + new Vector3(0, 0, -0.5f);  // Back Left
+        rayOrigins[0] = transform.position + transform.TransformDirection(Vector3.forward * 0.5f);   // Front
+        rayOrigins[1] = transform.position + transform.TransformDirection(Vector3.back * 0.5f);      // Back
+        rayOrigins[2] = transform.position + transform.TransformDirection(Vector3.right * 0.5f);     // Right
+        rayOrigins[3] = transform.position + transform.TransformDirection(Vector3.left * 0.5f);      // Left
 
-        float[] heights = new float[4];
+        float maxDistance = 0f;
+        Vector3 longestDirection = Vector3.zero;
+        float[] distances = new float[4];
 
         for (int i = 0; i < rayOrigins.Length; i++)
         {
             RaycastHit hit;
-            if (Physics.Raycast(rayOrigins[i], Vector3.down, out hit, 1f, collisionLayerMask))
+            if (Physics.Raycast(rayOrigins[i], Vector3.down, out hit, Mathf.Infinity, collisionLayerMask))
             {
-                Debug.DrawRay(rayOrigins[i], Vector3.down * hit.distance, Color.green);
-                heights[i] = hit.point.y;
+                Debug.DrawRay(rayOrigins[i], Vector3.down * hit.distance, Color.green);  // Draw the ray for visualization
+                distances[i] = hit.distance;
+                if (hit.distance > maxDistance)
+                {
+                    maxDistance = hit.distance;
+                    longestDirection = rayOrigins[i] - transform.position; // Direction from the origin to the ray origin
+                }
             }
             else
             {
-                heights[i] = transform.position.y;  // Default to the player's position if no hit
+                Debug.DrawRay(rayOrigins[i], Vector3.down * 10f, Color.red);  // Draw the ray even if it doesn't hit anything
+                distances[i] = 0f;
             }
         }
+        bool allDistancesEqual = Mathf.Approximately(distances[0], distances[1])&&
+                                 Mathf.Approximately(distances[0], distances[2])&&
+                                 Mathf.Approximately(distances[0], distances[3]);
+        if(allDistancesEqual)
+        {
+            longestDirection = Vector3.zero;
+        }
 
-        // Calculate height differences
-        float heightFront = (heights[0] + heights[1]) / 2;
-        float heightBack = (heights[2] + heights[3]) / 2;
-        float heightRight = (heights[0] + heights[2]) / 2;
-        float heightLeft = (heights[1] + heights[3]) / 2;
-
-        Vector3 forwardSlope = new Vector3(0, heightBack - heightFront, 1).normalized;
-        Vector3 rightSlope = new Vector3(1, heightLeft - heightRight, 0).normalized;
-
-        Vector3 slopeDirection = (forwardSlope + rightSlope).normalized;
-
-        Debug.Log($"Height Front: {heightFront}, Height Back: {heightBack}");
-        Debug.Log($"Height Right: {heightRight}, Height Left: {heightLeft}");
-        Debug.Log($"Calculated Slope Direction: {slopeDirection}");
-
-        return slopeDirection;
+        return longestDirection.normalized;
     }
 
 }
