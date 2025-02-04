@@ -620,13 +620,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 575034104}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.029321646, y: 0.00220696, z: -0.075022556, w: 0.99674827}
-  m_LocalPosition: {x: -2.8, y: -31.4, z: 95.8}
+  m_LocalRotation: {x: 0.02918458, y: 0.0035902727, z: -0.12204636, w: 0.99208874}
+  m_LocalPosition: {x: -2.9, y: -27.8, z: 93.9}
   m_LocalScale: {x: 29.21, y: 24.475, z: 42.58648}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 3.37, y: 0, z: -8.609}
+  m_LocalEulerAnglesHint: {x: 3.37, y: 0, z: -14.027}
 --- !u!1 &781268036
 GameObject:
   m_ObjectHideFlags: 0
@@ -1780,13 +1780,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1928090617}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.029010212, y: -0.0047996966, z: 0.16315895, w: 0.9861615}
+  m_LocalRotation: {x: 0.029143525, y: -0.0039095166, z: 0.13289852, w: 0.9906934}
   m_LocalPosition: {x: 2.17, y: -19.03, z: 45.61}
   m_LocalScale: {x: 29.21, y: 24.475, z: 42.58648}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 3.37, y: 0, z: 18.789}
+  m_LocalEulerAnglesHint: {x: 3.37, y: 0, z: 15.281}
 --- !u!1 &1951506044
 GameObject:
   m_ObjectHideFlags: 0
@@ -1873,7 +1873,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea78cbd3094d545408905e6c91408da9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
+  maxMoveSpeed: 10
+  accelerationTime: 2
   gravityScale: 9.81
 --- !u!135 &2140593618
 SphereCollider:
@@ -1958,7 +1959,7 @@ Transform:
   m_GameObject: {fileID: 2140593616}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.23, y: 10.6, z: -17.84}
+  m_LocalPosition: {x: 0.23, y: 5.31, z: -15.61}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1981,6 +1982,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   forceMultiplier: 2
+  groundCheckDistance: 5
+  snapDistanceThreshold: 1
+  raycastInterval: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
