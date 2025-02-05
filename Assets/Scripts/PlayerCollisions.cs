@@ -5,17 +5,18 @@ public class PlayerCollisions : MonoBehaviour
     public LayerMask collisionLayerMask;
     public float forceMultiplier = 10f;
     public float groundCheckDistance = 0.3f;
-    public float snapDistanceThreshold = 0.1f; 
-    public float raycastInterval = 0.5f; 
+    public float snapDistanceThreshold = 0.1f;
+    public float raycastInterval = 0.5f;
+    public float rotationSpeed = 100f; // Adjust the rotation speed as needed
 
     private Vector3 movementDirection;
     private float raycastTimer = 0f;
-    private Vector3 slopeDirection; 
+    private Vector3 slopeDirection;
 
     private void Start()
     {
-        movementDirection = Vector3.zero; 
-        slopeDirection = Vector3.zero; 
+        movementDirection = Vector3.zero;
+        slopeDirection = Vector3.zero;
     }
 
     private void FixedUpdate()
@@ -46,12 +47,20 @@ public class PlayerCollisions : MonoBehaviour
         {
             Debug.Log("Collision detected with ground.");
             SnapToGround();
-            movementDirection.y = 0f; 
+            movementDirection.y = 0f;
         }
 
-        if(CheckSideCollisions())
+        if (CheckSideCollisions())
         {
             movementDirection = Vector3.zero;
+        }
+
+        // Apply visual rotation based on movement direction
+        if (movementDirection != Vector3.zero)
+        {
+            Vector3 rotationAxis = Vector3.Cross(Vector3.up, movementDirection).normalized;
+            float rotationAngle = movementDirection.magnitude * rotationSpeed * Time.fixedDeltaTime;
+            transform.Rotate(rotationAxis, rotationAngle, Space.World);
         }
     }
 
@@ -62,7 +71,7 @@ public class PlayerCollisions : MonoBehaviour
 
         bool isHit = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, rayLength, collisionLayerMask);
 
-        Debug.DrawRay(rayOrigin, Vector3.down * rayLength, Color.red); 
+        Debug.DrawRay(rayOrigin, Vector3.down * rayLength, Color.red);
 
         return isHit;
     }
@@ -71,10 +80,10 @@ public class PlayerCollisions : MonoBehaviour
     {
         Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
         float sideCheckDistance = 0.5f;
-        
+
         foreach (var direction in directions)
         {
-            if(Physics.Raycast(transform.position, direction, sideCheckDistance, collisionLayerMask))
+            if (Physics.Raycast(transform.position, direction, sideCheckDistance, collisionLayerMask))
             {
                 Debug.DrawRay(transform.position, direction * sideCheckDistance, Color.yellow);
                 return true;
@@ -119,7 +128,6 @@ public class PlayerCollisions : MonoBehaviour
                     longestDirection = rayOrigins[i] - transform.position; // Direction from the origin to the ray origin
                 }
             }
-
             else
             {
                 Debug.DrawRay(rayOrigins[i], Vector3.down * 10f, Color.red);  // Draw the ray even if it doesn't hit anything
